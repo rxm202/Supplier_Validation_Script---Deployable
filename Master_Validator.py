@@ -672,7 +672,7 @@ df.loc[
 # ==========================================================
 
 address_rule_df = pd.read_excel(
-    "input/Country_Address_Ruless.xlsx"
+    "config/Country_Address_Ruless.xlsx"
 )
 
 mandatory_address_rules = (
@@ -739,7 +739,7 @@ for idx, row in df.iterrows():
 # ==========================================================
 
 payment_terms_df = pd.read_excel(
-    "input/PAY_TERMS.xlsx"
+    "config/PAY_TERMS.xlsx"
 )
 
 valid_payment_terms = set(
@@ -799,7 +799,7 @@ df.loc[
 # Load Payment Method Reference File
 
 payment_method_df = pd.read_excel(
-    "input/PAY_METHOD.xlsx"
+    "config/PAY_METHOD.xlsx"
 )
 
 # Create LOV Set
@@ -868,7 +868,7 @@ df.loc[
 # Load Supplier Type Reference File
 
 supplier_type_df = pd.read_excel(
-    "input/SUPPLIER_TYPE.xlsx"
+    "config/SUPPLIER_TYPE.xlsx"
 )
 
 # Create LOV Set
@@ -1379,7 +1379,7 @@ df.loc[
 # ==========================================================
 
 country_city_state_df = pd.read_excel(
-    "temp/COUNTRY_STATE_CITY_COMBINATION.xlsx"
+    "config/COUNTRY_STATE_CITY_COMBINATION.xlsx"
 )
 
 valid_countries = set(
