@@ -7,6 +7,22 @@ import os
 import plotly.express as px
 import time
 
+# ==========================================================
+# CREATE WORKING FOLDERS
+# ==========================================================
+
+import os
+
+for folder in [
+    "input",
+    "output",
+    "temp"
+]:
+    os.makedirs(
+        folder,
+        exist_ok=True
+    )
+
 # ======================================================
 # PAGE CONFIG
 # ======================================================
