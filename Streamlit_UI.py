@@ -241,7 +241,7 @@ elif menu == "📂 Upload & Run":
             f.write(uploaded_file.getbuffer())
 
         # ==========================================
-        # UPLOAD INPUT FILE TO AZURE
+        # AZURE UPLOAD TEMPORARILY DISABLED
         # ==========================================
 
         timestamp = datetime.now().strftime(
@@ -255,13 +255,8 @@ elif menu == "📂 Upload & Run":
             f"{timestamp}_{uploaded_file.name}"
         )
 
-        upload_blob(
-            save_path,
-            azure_blob_path
-        )
-
-        st.success(
-            "✅ File uploaded to Azure Blob Storage."
+        st.info(
+            "☁ Azure Blob upload temporarily disabled."
         )
 
         st.success(
@@ -311,90 +306,11 @@ elif menu == "📂 Upload & Run":
                 )
 
                 # ==========================================
-                # AZURE OUTPUT FOLDERS
+                # AZURE UPLOAD DISABLED
                 # ==========================================
 
-                output_folder = (
-                    f"data_integration/"
-                    f"supplier_R12/"
-                    f"Output/"
-                    f"{timestamp}"
-                )
-
-                error_folder = (
-                    f"data_integration/"
-                    f"supplier_R12/"
-                    f"Validation_error/"
-                    f"{timestamp}"
-                )
-
-                # ==========================================
-                # SUPPLIER OUTPUT
-                # ==========================================
-
-                if os.path.exists(
-                    "output/Supplier_Output.xlsx"
-                ):
-
-                    upload_blob(
-                        "output/Supplier_Output.xlsx",
-                        f"{output_folder}/Supplier_Output.xlsx"
-                    )
-
-                # ==========================================
-                # VALIDATION SUMMARY
-                # ==========================================
-
-                if os.path.exists(
-                    "output/Validation_Summary.csv"
-                ):
-
-                    upload_blob(
-                        "output/Validation_Summary.csv",
-                        f"{output_folder}/Validation_Summary.csv"
-                    )
-
-                # ==========================================
-                # WARNING REPORT
-                # ==========================================
-
-                if os.path.exists(
-                    "output/Supplier_Warning_Report.xlsx"
-                ):
-
-                    upload_blob(
-                        "output/Supplier_Warning_Report.xlsx",
-                        f"{output_folder}/Supplier_Warning_Report.xlsx"
-                    )
-
-                # ==========================================
-                # WEBADI OUTPUT
-                # ==========================================
-
-                if os.path.exists(
-                    "output/Supplier_WebADI_Output.xlsx"
-                ):
-
-                    upload_blob(
-                        "output/Supplier_WebADI_Output.xlsx",
-                        f"{output_folder}/Supplier_WebADI_Output.xlsx"
-                    )
-
-                # ==========================================
-                # VALIDATION ERROR
-                # ==========================================
-
-                if os.path.exists(
-                    "output/Supplier_Validation_Error.xlsx"
-                ):
-
-                    upload_blob(
-                        "output/Supplier_Validation_Error.xlsx",
-                        f"{error_folder}/Supplier_Validation_Error.xlsx"
-                    )
-
-                st.success(
-                    "✅ Output files uploaded to Azure Blob Storage."
+                st.info(
+                    "☁ Azure Blob output upload temporarily disabled."
                 )
 
                 # ==========================================
