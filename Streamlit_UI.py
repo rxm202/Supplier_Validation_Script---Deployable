@@ -6,6 +6,7 @@ import subprocess
 import os
 import plotly.express as px
 import time
+import sys
 
 # ==========================================================
 # CREATE WORKING FOLDERS
@@ -280,7 +281,7 @@ elif menu == "📂 Upload & Run":
                 # Run Validation Engine
 
                 result = subprocess.run(
-                    ["python", "Master_Validator.py"],
+                    ["sys.executable", "Master_Validator.py"],
                     capture_output=True,
                     text=True
                 )
@@ -288,7 +289,7 @@ elif menu == "📂 Upload & Run":
                 # Run Oracle WebADI Generator
 
                 webadi_result = subprocess.run(
-                    ["python", "WebADI_Generator.py"],
+                    ["sys.executable", "WebADI_Generator.py"],
                     capture_output=True,
                     text=True
                 )
