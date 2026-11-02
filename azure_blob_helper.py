@@ -1,31 +1,66 @@
 from azure.storage.blob import BlobServiceClient
+import streamlit as st
 import os
 
 # ==========================================================
 # AZURE STORAGE CONFIGURATION
 # ==========================================================
 
+CONNECTION_STRING = None
+
+# ----------------------------------------------------------
+# STREAMLIT CLOUD SECRET
+# ----------------------------------------------------------
+
 try:
 
-    from local_settings import (
-        AZURE_STORAGE_CONNECTION_STRING
-    )
-
-    CONNECTION_STRING = (
-        AZURE_STORAGE_CONNECTION_STRING
-    )
+    CONNECTION_STRING = st.secrets[
+        "AZURE_STORAGE_CONNECTION_STRING"
+    ]
 
 except Exception:
+    pass
 
-    CONNECTION_STRING = None
+# ----------------------------------------------------------
+# LOCAL DEVELOPMENT
+# ----------------------------------------------------------
 
-CONTAINER_NAME = "swiics-adls-data-dev"
+if not CONNECTION_STRING:
+
+    try:
+
+        from local_settings import (
+            AZURE_STORAGE_CONNECTION_STRING
+        )
+
+        CONNECTION_STRING = (
+            AZURE_STORAGE_CONNECTION_STRING
+        )
+
+    except Exception:
+        pass
+
+# ----------------------------------------------------------
+# ENVIRONMENT VARIABLE
+# ----------------------------------------------------------
+
+if not CONNECTION_STRING:
+
+    CONNECTION_STRING = os.getenv(
+        "AZURE_STORAGE_CONNECTION_STRING"
+    )
+
+# ----------------------------------------------------------
+# FINAL VALIDATION
+# ----------------------------------------------------------
 
 if not CONNECTION_STRING:
 
     raise ValueError(
         "AZURE_STORAGE_CONNECTION_STRING not found."
     )
+
+CONTAINER_NAME = "swiics-adls-data-dev"
 
 blob_service = BlobServiceClient.from_connection_string(
     CONNECTION_STRING
@@ -60,7 +95,7 @@ def download_blob(
         )
 
     print(
-        f"Downloaded: {blob_path}"
+        f"Downloaded : {blob_path}"
     )
 
 # ==========================================================
@@ -88,5 +123,5 @@ def upload_blob(
         )
 
     print(
-        f"Uploaded: {blob_path}"
+        f"Uploaded : {blob_path}"
     )
