@@ -55,24 +55,82 @@ def load_summary():
     return metrics
 
 
+# ======================================================
+# BANNER
+# ======================================================
+
 def show_banner():
 
     st.markdown(
         """
         <div style="
         background:linear-gradient(90deg,#0F3D77,#0057B8);
-        padding:20px;
-        border-radius:12px;
-        color:white;">
-            <h1>🏢 Supplier Validation Framework</h1>
-            <p>
-            Data Validation Framework.
-            </p>
+        height:10px;
+        border-radius:8px;
+        margin-bottom:20px;
+        ">
         </div>
         """,
         unsafe_allow_html=True
     )
 
+    col1, col2 = st.columns([1, 6])
+
+    with col1:
+
+        st.image(
+            "images/sherwin_logo.png",
+            width=80
+        )
+
+    with col2:
+
+        st.markdown(
+            """
+            <h1 style="
+            color:#0F3D77;
+            margin-bottom:0px;
+            ">
+            Supplier Validation Framework
+            </h1>
+            """,
+            unsafe_allow_html=True
+        )
+
+        st.markdown(
+            """
+            <p style="
+            font-size:18px;
+            font-weight:600;
+            color:#444444;
+            margin-top:0px;
+            margin-bottom:5px;
+            ">
+            Internal On-Prem Supplier Data Validation Platform
+            </p>
+            """,
+            unsafe_allow_html=True
+        )
+
+        st.markdown(
+            """
+            <p style="
+            font-size:15px;
+            color:#555555;
+            ">
+            Designed to support supplier onboarding validation,
+            data quality checks, validation reporting, and Oracle
+            supplier import readiness assessment within the
+            Sherwin-Williams enterprise environment.
+            </p>
+            """,
+            unsafe_allow_html=True
+        )
+
+    st.markdown("<br>", unsafe_allow_html=True)
+# ======================================================
+# KPI SECTION
+# ======================================================
 
 def show_kpis(metrics):
 
@@ -81,27 +139,43 @@ def show_kpis(metrics):
     with col1:
         st.metric(
             "📄 Total Records",
-            metrics.get("Total Records", 0)
+            metrics.get(
+                "Total Records",
+                0
+            )
         )
 
     with col2:
         st.metric(
             "✅ Valid Records",
-            metrics.get("Valid Records", 0)
+            metrics.get(
+                "Valid Records",
+                0
+            )
         )
 
     with col3:
         st.metric(
             "❌ Rejected Records",
-            metrics.get("Rejected Records", 0)
+            metrics.get(
+                "Rejected Records",
+                0
+            )
         )
 
     with col4:
         st.metric(
             "⚠ Warning Records",
-            metrics.get("Warning Records", 0)
+            metrics.get(
+                "Warning Records",
+                0
+            )
         )
 
+
+# ======================================================
+# CHARTS
+# ======================================================
 
 def show_charts(metrics):
 
@@ -113,9 +187,18 @@ def show_charts(metrics):
                 "Warnings"
             ],
             "Count": [
-                metrics.get("Valid Records", 0),
-                metrics.get("Rejected Records", 0),
-                metrics.get("Warning Records", 0)
+                metrics.get(
+                    "Valid Records",
+                    0
+                ),
+                metrics.get(
+                    "Rejected Records",
+                    0
+                ),
+                metrics.get(
+                    "Warning Records",
+                    0
+                )
             ]
         }
     )
@@ -132,9 +215,9 @@ def show_charts(metrics):
             title="Validation Distribution",
             color="Status",
             color_discrete_map={
-             "Valid": "#2E7D32",
-             "Warnings": "#FFC107",
-             "Rejected": "#C62828"
+                "Valid": "#2E7D32",
+                "Warnings": "#FFC107",
+                "Rejected": "#C62828"
             }
         )
 
@@ -152,9 +235,9 @@ def show_charts(metrics):
             color="Status",
             title="Records by Status",
             color_discrete_map={
-             "Valid": "#2E7D32",
-             "Warnings": "#FFC107",
-             "Rejected": "#C62828"
+                "Valid": "#2E7D32",
+                "Warnings": "#FFC107",
+                "Rejected": "#C62828"
             }
         )
 
@@ -163,15 +246,41 @@ def show_charts(metrics):
             use_container_width=True
         )
 
+
 # ======================================================
 # SIDEBAR
 # ======================================================
 
+col_logo, col_title = st.sidebar.columns([1, 2])
+
+with col_logo:
+
+    st.image(
+        "images/sherwin_logo.png",
+        width=50
+    )
+
+with col_title:
+
+    st.markdown(
+        """
+        **Supplier<br>
+        Validation**
+        """,
+        unsafe_allow_html=True
+    )
+
 st.sidebar.markdown(
     """
-    # 🏢 Supplier Validation
-    
+    **Internal On-Prem**  
     Data Quality Platform
+
+    ---
+
+    Supplier onboarding validation,
+    data quality assessment,
+    validation reporting,
+    and Oracle WebADI readiness.
     """
 )
 
@@ -185,6 +294,7 @@ menu = st.sidebar.radio(
         "ℹ About"
     ]
 )
+
 
 # ======================================================
 # DASHBOARD
@@ -459,6 +569,14 @@ elif menu == "📊 Reports & Downloads":
 
     st.subheader("Download Center")
 
+    st.markdown(
+        """
+        Download validation reports, summary files,
+        and Oracle WebADI output generated during
+        supplier validation processing.
+        """
+    )
+
     files = [
         (
             "output/Supplier_Output.xlsx",
@@ -477,25 +595,32 @@ elif menu == "📊 Reports & Downloads":
             "📊 Validation Summary"
         ),
         (
-        "output/Supplier_WebADI_Output.xlsx",
-        "🚀 Oracle WebADI File"
-         )
+            "output/Supplier_WebADI_Output.xlsx",
+            "🚀 Oracle WebADI File"
+        )
     ]
 
-    for file_path, label in files:
+    col1, col2, col3 = st.columns(3)
+
+    columns = [col1, col2, col3]
+
+    for idx, (file_path, label) in enumerate(files):
 
         if os.path.exists(file_path):
 
-            with open(
-                file_path,
-                "rb"
-            ) as file:
+            with columns[idx % 3]:
 
-                st.download_button(
-                    label=label,
-                    data=file.read(),
-                    file_name=os.path.basename(file_path)
-                )
+                with open(
+                    file_path,
+                    "rb"
+                ) as file:
+
+                    st.download_button(
+                        label=label,
+                        data=file.read(),
+                        file_name=os.path.basename(file_path),
+                        use_container_width=True
+                    )
 
     st.divider()
 
