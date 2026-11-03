@@ -1110,19 +1110,42 @@ df.loc[
 # INACTIVE SUPPLIER WARNING
 # ==========================================================
 
+today = pd.Timestamp.today().normalize()
+
+h_end_date = pd.to_datetime(
+    df["H_END_DATE_ACTIVE"],
+    errors="coerce"
+)
+
+s_inactive_date = pd.to_datetime(
+    df["S_INACTIVE_DATE"],
+    errors="coerce"
+)
+
 inactive_supplier_mask = (
-    df["S_INACTIVE_DATE"]
-    .fillna("")
-    .astype(str)
-    .str.strip()
-    != ""
+    (
+        h_end_date.notna()
+    )
+    &
+    (
+        h_end_date < today
+    )
+) | (
+    (
+        s_inactive_date.notna()
+    )
+    &
+    (
+        s_inactive_date < today
+    )
 )
 
 df.loc[
     inactive_supplier_mask,
     "WARNING_MESSAGE"
 ] += (
-    "Supplier is already inactive. "
+    "Supplier appears to be inactive based on "
+    "H_END_DATE_ACTIVE or S_INACTIVE_DATE. "
     "Please verify whether reactivation is required "
     "before submitting the request | "
 )
@@ -1131,6 +1154,7 @@ df.loc[
     inactive_supplier_mask,
     "WARNING_COLUMNS"
 ] += (
+    "H_END_DATE_ACTIVE|"
     "S_INACTIVE_DATE|"
 )
 
