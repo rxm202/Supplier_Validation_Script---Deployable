@@ -624,7 +624,9 @@ elif menu == "📊 Reports & Downloads":
 
     st.divider()
 
+        # ==========================================
     # ERROR PREVIEW
+    # ==========================================
 
     error_file = (
         "output/Supplier_Validation_Error.xlsx"
@@ -634,14 +636,24 @@ elif menu == "📊 Reports & Downloads":
 
         st.subheader("❌ Error Preview")
 
-        error_df = pd.read_excel(error_file)
+        error_df = pd.read_excel(
+            error_file,
+            dtype=str
+        )
+
+        preview_df = error_df.drop(
+            columns=[
+                "ERROR_COLUMNS",
+                "WARNING_COLUMNS"
+            ],
+            errors="ignore"
+        )
 
         st.dataframe(
-            error_df.head(20),
+            preview_df.head(20),
             use_container_width=True,
             height=350
         )
-
 
 # ======================================================
 # ABOUT
