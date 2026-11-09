@@ -664,6 +664,24 @@ elif menu == "📊 Reports & Downloads":
         )
     ]
 
+    download_names = {
+
+        "✅ Supplier Output":
+            "Supplier_Output",
+
+        "❌ Validation Error":
+            "Supplier_Validation_Error",
+
+        "⚠ Warning Report":
+            "Supplier_Warning_Report",
+
+        "📊 Validation Summary":
+            "Validation_Summary",
+
+        "🚀 Oracle WebADI File":
+            "Supplier_WebADI_Output"
+    }
+
     col1, col2, col3 = st.columns(3)
 
     columns = [col1, col2, col3]
@@ -674,6 +692,20 @@ elif menu == "📊 Reports & Downloads":
 
             with columns[idx % 3]:
 
+                download_timestamp = datetime.now().strftime(
+                    "%Y%m%d_%H%M%S"
+                )
+
+                file_extension = os.path.splitext(
+                    file_path
+                )[1]
+
+                download_file_name = (
+                    f"{download_names[label]}_"
+                    f"{download_timestamp}"
+                    f"{file_extension}"
+                )
+
                 with open(
                     file_path,
                     "rb"
@@ -682,7 +714,7 @@ elif menu == "📊 Reports & Downloads":
                     st.download_button(
                         label=label,
                         data=file.read(),
-                        file_name=os.path.basename(file_path),
+                        file_name=download_file_name,
                         use_container_width=True
                     )
 
