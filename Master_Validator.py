@@ -1755,14 +1755,14 @@ validation_report_df.to_excel(
 # ==========================================================
 
 error_fill = PatternFill(
-    start_color="F4CCCC",
-    end_color="F4CCCC",
+    start_color="F4B084",
+    end_color="F4B084",
     fill_type="solid"
 )
 
 warning_fill = PatternFill(
-    start_color="FFE599",
-    end_color="FFE599",
+    start_color="FFE699",
+    end_color="FFE699",
     fill_type="solid"
 )
 
@@ -1881,14 +1881,41 @@ if "WARNING_COLUMNS" in headers:
     ].hidden = True
 
 # ----------------------------------------------------------
-# OPTIONAL LEGEND
+# LEGEND
 # ----------------------------------------------------------
+
+from openpyxl.styles import Font
 
 ws.insert_rows(1, 2)
 
 ws["A1"] = "Legend:"
-ws["B1"] = "🔴 Validation Error (Fix Required)"
-ws["C1"] = "🟡 Warning (Review Recommended)"
+ws["A1"].font = Font(
+    bold=True
+)
+
+# Error Legend
+
+ws["B1"] = "Validation Error (Fix Required)"
+ws["B1"].fill = error_fill
+ws["B1"].font = Font(
+    bold=True
+)
+
+# Warning Legend
+
+ws["C1"] = "Warning (Review Recommended)"
+ws["C1"].fill = warning_fill
+ws["C1"].font = Font(
+    bold=True
+)
+
+# Freeze Header Row
+
+ws.freeze_panes = "A4"
+
+# Enable Auto Filter
+
+ws.auto_filter.ref = ws.dimensions
 
 wb.save(
     "output/Supplier_Validation_Report.xlsx"
