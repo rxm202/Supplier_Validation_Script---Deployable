@@ -359,7 +359,7 @@ elif menu == "📂 Upload & Run":
 
         st.info(
             """
-            Download the approved supplier input template
+            Download the input template
             before preparing supplier data.
 
             • Do not modify column names
