@@ -1641,22 +1641,15 @@ error_df = df[
     != ""
 ].copy()
 
+# Valid = No Errors
+# Warnings are still considered loadable
+
 valid_df = df[
-    (
-        df["FAILURE_REASON"]
-        .fillna("")
-        .astype(str)
-        .str.strip()
-        == ""
-    )
-    &
-    (
-        df["WARNING_MESSAGE"]
-        .fillna("")
-        .astype(str)
-        .str.strip()
-        == ""
-    )
+    df["FAILURE_REASON"]
+    .fillna("")
+    .astype(str)
+    .str.strip()
+    == ""
 ].copy()
 
 # ==========================================================
@@ -1692,18 +1685,6 @@ validation_report_df = df[
         .str.strip()
         != ""
     )
-].copy()
-
-# ==========================================================
-# WARNING DATAFRAME
-# ==========================================================
-
-warning_df = df[
-    df["WARNING_MESSAGE"]
-    .fillna("")
-    .astype(str)
-    .str.strip()
-    != ""
 ].copy()
 
 # ==========================================================
