@@ -1888,26 +1888,37 @@ from openpyxl.styles import Font
 
 ws.insert_rows(1, 2)
 
+# Legend Title
+
 ws["A1"] = "Legend:"
 ws["A1"].font = Font(
     bold=True
 )
 
-# Error Legend
+# Error Indicator Cell
 
-ws["B1"] = "Validation Error (Fix Required)"
+ws["B1"] = ""
 ws["B1"].fill = error_fill
-ws["B1"].font = Font(
-    bold=True
-)
 
-# Warning Legend
-
-ws["C1"] = "Warning (Review Recommended)"
-ws["C1"].fill = warning_fill
+ws["C1"] = "Validation Error (Fix Required)"
 ws["C1"].font = Font(
     bold=True
 )
+
+# Warning Indicator Cell
+
+ws["D1"] = ""
+ws["D1"].fill = warning_fill
+
+ws["E1"] = "Warning (Review Recommended)"
+ws["E1"].font = Font(
+    bold=True
+)
+
+# Make Color Boxes Visible
+
+ws.column_dimensions["B"].width = 4
+ws.column_dimensions["D"].width = 4
 
 # Freeze Header Row
 
