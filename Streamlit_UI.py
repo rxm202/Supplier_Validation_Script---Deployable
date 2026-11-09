@@ -334,12 +334,65 @@ elif menu == "📂 Upload & Run":
 
     st.write("")
 
-    st.subheader("Upload Supplier File")
+    col1, col2 = st.columns([2, 1])
 
-    uploaded_file = st.file_uploader(
-        "Upload Supplier Excel File",
-        type=["xlsx"]
-    )
+    # ==========================================
+    # UPLOAD SECTION
+    # ==========================================
+
+    with col1:
+
+        st.subheader("Upload Supplier File")
+
+        uploaded_file = st.file_uploader(
+            "Upload Supplier Excel File",
+            type=["xlsx"]
+        )
+
+    # ==========================================
+    # TEMPLATE SECTION
+    # ==========================================
+
+    with col2:
+
+        st.subheader("Input Template")
+
+        st.info(
+            """
+            Download the approved supplier input template
+            before preparing supplier data.
+
+            • Do not modify column names
+
+            • Populate supplier records from Row 2
+
+            • Save the file in .xlsx format
+
+            • Upload the completed file for validation
+            """
+        )
+
+        template_file = (
+            "template/Supplier_Input_Template.xlsx"
+        )
+
+        if os.path.exists(template_file):
+
+            with open(
+                template_file,
+                "rb"
+            ) as file:
+
+                st.download_button(
+                    label="📥 Download Input Template",
+                    data=file.read(),
+                    file_name="Supplier_Input_Template.xlsx",
+                    use_container_width=True
+                )
+
+    # ==========================================
+    # FILE UPLOAD PROCESSING
+    # ==========================================
 
     if uploaded_file is not None:
 
@@ -349,7 +402,10 @@ elif menu == "📂 Upload & Run":
         )
 
         with open(save_path, "wb") as f:
-            f.write(uploaded_file.getbuffer())
+
+            f.write(
+                uploaded_file.getbuffer()
+            )
 
         # ==========================================
         # AZURE UPLOAD TEMPORARILY DISABLED
@@ -371,7 +427,7 @@ elif menu == "📂 Upload & Run":
         )
 
         st.success(
-            f"File uploaded: {uploaded_file.name}"
+            f"✅ File uploaded: {uploaded_file.name}"
         )
 
         if st.button("🚀 Run Validation"):
@@ -384,22 +440,34 @@ elif menu == "📂 Upload & Run":
 
                 for i in range(100):
 
-                    progress_bar.progress(i + 1)
+                    progress_bar.progress(
+                        i + 1
+                    )
 
                     time.sleep(0.01)
 
-                # Run Validation Engine
+                # ==========================================
+                # RUN VALIDATION ENGINE
+                # ==========================================
 
                 result = subprocess.run(
-                    [sys.executable, "Master_Validator.py"],
+                    [
+                        sys.executable,
+                        "Master_Validator.py"
+                    ],
                     capture_output=True,
                     text=True
                 )
 
-                # Run Oracle WebADI Generator
+                # ==========================================
+                # RUN WEBADI GENERATOR
+                # ==========================================
 
                 webadi_result = subprocess.run(
-                    [sys.executable, "WebADI_Generator.py"],
+                    [
+                        sys.executable,
+                        "WebADI_Generator.py"
+                    ],
                     capture_output=True,
                     text=True
                 )
@@ -415,10 +483,6 @@ elif menu == "📂 Upload & Run":
                 st.success(
                     "✅ Validation completed successfully."
                 )
-
-                # ==========================================
-                # AZURE UPLOAD DISABLED
-                # ==========================================
 
                 st.info(
                     "☁ Azure Blob output upload temporarily disabled."
