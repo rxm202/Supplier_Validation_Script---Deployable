@@ -647,12 +647,8 @@ elif menu == "📊 Reports & Downloads":
             "✅ Supplier Output"
         ),
         (
-            "output/Supplier_Validation_Error.xlsx",
+            "output/Supplier_Validation_Report.xlsx",
             "❌ Validation Error"
-        ),
-        (
-            "output/Supplier_Warning_Report.xlsx",
-            "⚠ Warning Report"
         ),
         (
             "output/Validation_Summary.csv",
@@ -670,10 +666,7 @@ elif menu == "📊 Reports & Downloads":
             "Supplier_Output",
 
         "❌ Validation Error":
-            "Supplier_Validation_Error",
-
-        "⚠ Warning Report":
-            "Supplier_Warning_Report",
+            "Supplier_Validation_Report",
 
         "📊 Validation Summary":
             "Validation_Summary",
@@ -725,12 +718,12 @@ elif menu == "📊 Reports & Downloads":
     # ==========================================
 
     error_file = (
-        "output/Supplier_Validation_Error.xlsx"
+        "output/Supplier_Validation_Report.xlsx"
     )
 
     if os.path.exists(error_file):
 
-        st.subheader("❌ Error Preview")
+        st.subheader("📋 Validation Report Preview")
 
         error_df = pd.read_excel(
             error_file,
