@@ -1922,11 +1922,17 @@ ws.column_dimensions["D"].width = 4
 
 # Freeze Header Row
 
-ws.freeze_panes = "A4"
+ws.freeze_panes = "A3"
 
-# Enable Auto Filter
+# Enable Auto Filter on Actual Header Row
 
-ws.auto_filter.ref = ws.dimensions
+last_col_letter = get_column_letter(
+    ws.max_column
+)
+
+ws.auto_filter.ref = (
+    f"A3:{last_col_letter}{ws.max_row}"
+)
 
 wb.save(
     "output/Supplier_Validation_Report.xlsx"
