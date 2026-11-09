@@ -1642,11 +1642,56 @@ error_df = df[
 ].copy()
 
 valid_df = df[
-    df["FAILURE_REASON"]
+    (
+        df["FAILURE_REASON"]
+        .fillna("")
+        .astype(str)
+        .str.strip()
+        == ""
+    )
+    &
+    (
+        df["WARNING_MESSAGE"]
+        .fillna("")
+        .astype(str)
+        .str.strip()
+        == ""
+    )
+].copy()
+
+# ==========================================================
+# WARNING DATAFRAME
+# ==========================================================
+
+warning_df = df[
+    df["WARNING_MESSAGE"]
     .fillna("")
     .astype(str)
     .str.strip()
-    == ""
+    != ""
+].copy()
+
+# ==========================================================
+# CONSOLIDATED VALIDATION REPORT
+# ERRORS + WARNINGS
+# ==========================================================
+
+validation_report_df = df[
+    (
+        df["FAILURE_REASON"]
+        .fillna("")
+        .astype(str)
+        .str.strip()
+        != ""
+    )
+    |
+    (
+        df["WARNING_MESSAGE"]
+        .fillna("")
+        .astype(str)
+        .str.strip()
+        != ""
+    )
 ].copy()
 
 # ==========================================================
@@ -1665,10 +1710,10 @@ warning_df = df[
 # ADD SOURCE ROW NUMBER
 # ==========================================================
 
-error_df.insert(
+validation_report_df.insert(
     0,
     "SOURCE_ROW_NUMBER",
-    error_df.index + 2
+    validation_report_df.index + 2
 )
 
 warning_df.insert(
@@ -1700,7 +1745,7 @@ valid_df.to_excel(
 # CONSOLIDATED VALIDATION REPORT
 # ==========================================================
 
-error_df.to_excel(
+validation_report_df.to_excel(
     "output/Supplier_Validation_Report.xlsx",
     index=False
 )
