@@ -1696,18 +1696,17 @@ valid_df.to_excel(
     index=False
 )
 
-error_df.to_excel(
-    "output/Supplier_Validation_Error.xlsx",
-    index=False
-)
+# ==========================================================
+# CONSOLIDATED VALIDATION REPORT
+# ==========================================================
 
-warning_df.to_excel(
-    "output/Supplier_Warning_Report.xlsx",
+error_df.to_excel(
+    "output/Supplier_Validation_Report.xlsx",
     index=False
 )
 
 # ==========================================================
-# COLOR ERROR + WARNING CELLS IN ERROR REPORT
+# COLOR ERROR + WARNING CELLS
 # ==========================================================
 
 error_fill = PatternFill(
@@ -1723,7 +1722,7 @@ warning_fill = PatternFill(
 )
 
 wb = load_workbook(
-    "output/Supplier_Validation_Error.xlsx"
+    "output/Supplier_Validation_Report.xlsx"
 )
 
 ws = wb.active
@@ -1796,12 +1795,15 @@ if "WARNING_COLUMNS" in headers:
                     headers[col_name]
                 ).fill
 
-                # Do not overwrite RED error cells
+                # Do not overwrite error color
                 if (
                     existing_fill.fill_type != "solid"
                     or
                     existing_fill.start_color.rgb
-                    not in ["00F4CCCC", "FFF4CCCC"]
+                    not in [
+                        "00F4CCCC",
+                        "FFF4CCCC"
+                    ]
                 ):
 
                     ws.cell(
@@ -1833,8 +1835,18 @@ if "WARNING_COLUMNS" in headers:
         col_letter
     ].hidden = True
 
+# ----------------------------------------------------------
+# OPTIONAL LEGEND
+# ----------------------------------------------------------
+
+ws.insert_rows(1, 2)
+
+ws["A1"] = "Legend:"
+ws["B1"] = "🔴 Validation Error (Fix Required)"
+ws["C1"] = "🟡 Warning (Review Recommended)"
+
 wb.save(
-    "output/Supplier_Validation_Error.xlsx"
+    "output/Supplier_Validation_Report.xlsx"
 )
 
 # ==========================================================
@@ -1882,8 +1894,7 @@ print("")
 print("Generated Files")
 print("----------------")
 print("output/Supplier_Output.xlsx")
-print("output/Supplier_Validation_Error.xlsx")
-print("output/Supplier_Warning_Report.xlsx")
+print("output/Supplier_Validation_Report.xlsx")
 print("output/Validation_Summary.csv")
 print("output/Supplier_WebADI_Output.xlsx")
 print("=" * 60)
