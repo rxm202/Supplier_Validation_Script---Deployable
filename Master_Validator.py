@@ -1707,12 +1707,18 @@ warning_df.to_excel(
 )
 
 # ==========================================================
-# COLOR ERROR CELLS
+# COLOR ERROR + WARNING CELLS IN ERROR REPORT
 # ==========================================================
 
 error_fill = PatternFill(
-    start_color="FF9999",
-    end_color="FF9999",
+    start_color="F4CCCC",
+    end_color="F4CCCC",
+    fill_type="solid"
+)
+
+warning_fill = PatternFill(
+    start_color="FFE599",
+    end_color="FFE599",
     fill_type="solid"
 )
 
@@ -1730,34 +1736,82 @@ for col in range(1, ws.max_column + 1):
         ws.cell(1, col).value
     ] = col
 
-for row in range(2, ws.max_row + 1):
+# ----------------------------------------------------------
+# COLOR ERROR CELLS (RED)
+# ----------------------------------------------------------
 
-    if "ERROR_COLUMNS" not in headers:
-        continue
+if "ERROR_COLUMNS" in headers:
 
-    error_cols = str(
-        ws.cell(
-            row,
-            headers["ERROR_COLUMNS"]
-        ).value or ""
-    )
+    for row in range(2, ws.max_row + 1):
 
-    for col_name in error_cols.split("|"):
-
-        col_name = col_name.strip()
-
-        if (
-            col_name != ""
-            and
-            col_name in headers
-        ):
-
+        error_cols = str(
             ws.cell(
                 row,
-                headers[col_name]
-            ).fill = error_fill
+                headers["ERROR_COLUMNS"]
+            ).value or ""
+        )
 
-# Hide helper column
+        for col_name in error_cols.split("|"):
+
+            col_name = col_name.strip()
+
+            if (
+                col_name != ""
+                and
+                col_name in headers
+            ):
+
+                ws.cell(
+                    row,
+                    headers[col_name]
+                ).fill = error_fill
+
+# ----------------------------------------------------------
+# COLOR WARNING CELLS (YELLOW)
+# ----------------------------------------------------------
+
+if "WARNING_COLUMNS" in headers:
+
+    for row in range(2, ws.max_row + 1):
+
+        warning_cols = str(
+            ws.cell(
+                row,
+                headers["WARNING_COLUMNS"]
+            ).value or ""
+        )
+
+        for col_name in warning_cols.split("|"):
+
+            col_name = col_name.strip()
+
+            if (
+                col_name != ""
+                and
+                col_name in headers
+            ):
+
+                existing_fill = ws.cell(
+                    row,
+                    headers[col_name]
+                ).fill
+
+                # Do not overwrite RED error cells
+                if (
+                    existing_fill.fill_type != "solid"
+                    or
+                    existing_fill.start_color.rgb
+                    not in ["00F4CCCC", "FFF4CCCC"]
+                ):
+
+                    ws.cell(
+                        row,
+                        headers[col_name]
+                    ).fill = warning_fill
+
+# ----------------------------------------------------------
+# HIDE HELPER COLUMNS
+# ----------------------------------------------------------
 
 if "ERROR_COLUMNS" in headers:
 
@@ -1768,63 +1822,6 @@ if "ERROR_COLUMNS" in headers:
     ws.column_dimensions[
         col_letter
     ].hidden = True
-
-wb.save(
-    "output/Supplier_Validation_Error.xlsx"
-)
-
-# ==========================================================
-# COLOR WARNING CELLS
-# ==========================================================
-
-warning_fill = PatternFill(
-    start_color="FFF2CC",
-    end_color="FFF2CC",
-    fill_type="solid"
-)
-
-wb = load_workbook(
-    "output/Supplier_Warning_Report.xlsx"
-)
-
-ws = wb.active
-
-headers = {}
-
-for col in range(1, ws.max_column + 1):
-
-    headers[
-        ws.cell(1, col).value
-    ] = col
-
-for row in range(2, ws.max_row + 1):
-
-    if "WARNING_COLUMNS" not in headers:
-        continue
-
-    warning_cols = str(
-        ws.cell(
-            row,
-            headers["WARNING_COLUMNS"]
-        ).value or ""
-    )
-
-    for col_name in warning_cols.split("|"):
-
-        col_name = col_name.strip()
-
-        if (
-            col_name != ""
-            and
-            col_name in headers
-        ):
-
-            ws.cell(
-                row,
-                headers[col_name]
-            ).fill = warning_fill
-
-# Hide helper column
 
 if "WARNING_COLUMNS" in headers:
 
@@ -1837,7 +1834,7 @@ if "WARNING_COLUMNS" in headers:
     ].hidden = True
 
 wb.save(
-    "output/Supplier_Warning_Report.xlsx"
+    "output/Supplier_Validation_Error.xlsx"
 )
 
 # ==========================================================
