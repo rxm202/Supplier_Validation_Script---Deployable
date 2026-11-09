@@ -600,33 +600,45 @@ df.loc[
 
 # ==========================================================
 # RULE 11
-# A_ADDRESS_LINE1 SPECIAL CHARACTER VALIDATION
+# ADDRESS SPECIAL CHARACTER VALIDATION
 # ==========================================================
 
-invalid_address_mask = (
-    df["A_ADDRESS_LINE1"]
-    .fillna("")
-    .astype(str)
-    .str.contains(
-        r"[^A-Za-z0-9\s\.\,\-\/&()]",
-        regex=True
+address_columns = [
+    "A_ADDRESS_LINE1",
+    "A_ADDRESS_LINE2",
+    "A_ADDRESS_LINE3",
+    "A_ADDRESS_LINE4"
+]
+
+for col in address_columns:
+
+    if col not in df.columns:
+        continue
+
+    invalid_address_mask = (
+        df[col]
+        .fillna("")
+        .astype(str)
+        .str.contains(
+            r"[^A-Za-z0-9\s\.\,\-\/&()#]",
+            regex=True
+        )
     )
-)
 
-df.loc[
-    invalid_address_mask,
-    "FAILURE_REASON"
-] += (
-    "A_ADDRESS_LINE1 contains invalid characters. "
-    "Special characters are not allowed. | "
-)
+    df.loc[
+        invalid_address_mask,
+        "FAILURE_REASON"
+    ] += (
+        f"{col} contains invalid characters. "
+        "Only English characters are allowed. | "
+    )
 
-df.loc[
-    invalid_address_mask,
-    "ERROR_COLUMNS"
-] += (
-    "A_ADDRESS_LINE1|"
-)
+    df.loc[
+        invalid_address_mask,
+        "ERROR_COLUMNS"
+    ] += (
+        f"{col}|"
+    )
 # ==========================================================
 # RULE 12
 # PAYMENT PRIORITY / PAY GROUP WARNING
