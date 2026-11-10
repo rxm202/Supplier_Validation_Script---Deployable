@@ -400,7 +400,8 @@ if menu == "🏠 Dashboard":
 
                 validation_df = pd.read_excel(
                     validation_file,
-                    dtype=str
+                    dtype=str,
+                    header=2
                 )
 
                 error_df = validation_df[
@@ -435,7 +436,8 @@ if menu == "🏠 Dashboard":
 
                 validation_df = pd.read_excel(
                     validation_file,
-                    dtype=str
+                    dtype=str,
+                    header=2
                 )
 
                 warning_df = validation_df[
