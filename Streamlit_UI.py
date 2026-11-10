@@ -345,7 +345,9 @@ if menu == "🏠 Dashboard":
 
     if metrics:
 
-        st.subheader("Validation KPI Dashboard")
+        st.subheader(
+            "Validation KPI Dashboard"
+        )
 
         show_kpis(metrics)
 
@@ -353,12 +355,110 @@ if menu == "🏠 Dashboard":
 
         show_charts(metrics)
 
+        # ======================================================
+        # KPI DRILL DOWN
+        # ======================================================
+
+        if st.session_state["record_view"] == "VALID":
+
+            st.divider()
+
+            st.subheader(
+                "✅ Valid Records"
+            )
+
+            valid_file = (
+                "output/Supplier_Output.xlsx"
+            )
+
+            if os.path.exists(valid_file):
+
+                valid_df = pd.read_excel(
+                    valid_file,
+                    dtype=str
+                )
+
+                st.dataframe(
+                    valid_df,
+                    use_container_width=True,
+                    height=400
+                )
+
+        elif st.session_state["record_view"] == "ERROR":
+
+            st.divider()
+
+            st.subheader(
+                "❌ Rejected Records"
+            )
+
+            validation_file = (
+                "output/Supplier_Validation_Report.xlsx"
+            )
+
+            if os.path.exists(validation_file):
+
+                validation_df = pd.read_excel(
+                    validation_file,
+                    dtype=str
+                )
+
+                error_df = validation_df[
+                    validation_df[
+                        "FAILURE_REASON"
+                    ]
+                    .fillna("")
+                    .astype(str)
+                    .str.strip()
+                    != ""
+                ]
+
+                st.dataframe(
+                    error_df,
+                    use_container_width=True,
+                    height=400
+                )
+
+        elif st.session_state["record_view"] == "WARNING":
+
+            st.divider()
+
+            st.subheader(
+                "⚠ Warning Records"
+            )
+
+            validation_file = (
+                "output/Supplier_Validation_Report.xlsx"
+            )
+
+            if os.path.exists(validation_file):
+
+                validation_df = pd.read_excel(
+                    validation_file,
+                    dtype=str
+                )
+
+                warning_df = validation_df[
+                    validation_df[
+                        "WARNING_MESSAGE"
+                    ]
+                    .fillna("")
+                    .astype(str)
+                    .str.strip()
+                    != ""
+                ]
+
+                st.dataframe(
+                    warning_df,
+                    use_container_width=True,
+                    height=400
+                )
+
     else:
 
         st.info(
             "No validation results available. Run a validation first."
         )
-
 # ======================================================
 # UPLOAD & RUN
 # ======================================================
