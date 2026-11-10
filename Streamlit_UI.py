@@ -389,7 +389,7 @@ if menu == "🏠 Dashboard":
             st.divider()
 
             st.subheader(
-                "❌ Rejected Records"
+                f"❌ Rejected Records ({metrics.get('Rejected Records', 0)})"
             )
 
             validation_file = (
@@ -412,10 +412,42 @@ if menu == "🏠 Dashboard":
                     .astype(str)
                     .str.strip()
                     != ""
+                ].copy()
+
+                error_df = error_df.drop(
+                    columns=[
+                        "ERROR_COLUMNS",
+                        "WARNING_COLUMNS"
+                    ],
+                    errors="ignore"
+                )
+
+                priority_columns = [
+                    "SOURCE_ROW_NUMBER",
+                    "H_SUPPLIER_NAME",
+                    "FAILURE_REASON",
+                    "WARNING_MESSAGE"
+                ]
+
+                remaining_columns = [
+                    col
+                    for col in error_df.columns
+                    if col not in priority_columns
+                ]
+
+                display_df = error_df[
+                    [
+                        col
+                        for col in (
+                            priority_columns +
+                            remaining_columns
+                        )
+                        if col in error_df.columns
+                    ]
                 ]
 
                 st.dataframe(
-                    error_df,
+                    display_df,
                     use_container_width=True,
                     height=400
                 )
@@ -425,7 +457,7 @@ if menu == "🏠 Dashboard":
             st.divider()
 
             st.subheader(
-                "⚠ Warning Records"
+                f"⚠ Warning Records ({metrics.get('Warning Records', 0)})"
             )
 
             validation_file = (
@@ -448,10 +480,42 @@ if menu == "🏠 Dashboard":
                     .astype(str)
                     .str.strip()
                     != ""
+                ].copy()
+
+                warning_df = warning_df.drop(
+                    columns=[
+                        "ERROR_COLUMNS",
+                        "WARNING_COLUMNS"
+                    ],
+                    errors="ignore"
+                )
+
+                priority_columns = [
+                    "SOURCE_ROW_NUMBER",
+                    "H_SUPPLIER_NAME",
+                    "WARNING_MESSAGE",
+                    "FAILURE_REASON"
+                ]
+
+                remaining_columns = [
+                    col
+                    for col in warning_df.columns
+                    if col not in priority_columns
+                ]
+
+                display_df = warning_df[
+                    [
+                        col
+                        for col in (
+                            priority_columns +
+                            remaining_columns
+                        )
+                        if col in warning_df.columns
+                    ]
                 ]
 
                 st.dataframe(
-                    warning_df,
+                    display_df,
                     use_container_width=True,
                     height=400
                 )
