@@ -8,6 +8,15 @@ import plotly.express as px
 import time
 import sys
 
+# ======================================================
+# SESSION STATE
+# ======================================================
+
+if "record_view" not in st.session_state:
+
+    st.session_state["record_view"] = None
+
+
 # ==========================================================
 # CREATE WORKING FOLDERS
 # ==========================================================
@@ -137,6 +146,7 @@ def show_kpis(metrics):
     col1, col2, col3, col4 = st.columns(4)
 
     with col1:
+
         st.metric(
             "📄 Total Records",
             metrics.get(
@@ -146,6 +156,7 @@ def show_kpis(metrics):
         )
 
     with col2:
+
         st.metric(
             "✅ Valid Records",
             metrics.get(
@@ -154,7 +165,16 @@ def show_kpis(metrics):
             )
         )
 
+        if st.button(
+            "View",
+            key="view_valid"
+        ):
+            st.session_state[
+                "record_view"
+            ] = "VALID"
+
     with col3:
+
         st.metric(
             "❌ Rejected Records",
             metrics.get(
@@ -163,7 +183,16 @@ def show_kpis(metrics):
             )
         )
 
+        if st.button(
+            "View",
+            key="view_error"
+        ):
+            st.session_state[
+                "record_view"
+            ] = "ERROR"
+
     with col4:
+
         st.metric(
             "⚠ Warning Records",
             metrics.get(
@@ -172,7 +201,13 @@ def show_kpis(metrics):
             )
         )
 
-
+        if st.button(
+            "View",
+            key="view_warning"
+        ):
+            st.session_state[
+                "record_view"
+            ] = "WARNING"
 # ======================================================
 # CHARTS
 # ======================================================

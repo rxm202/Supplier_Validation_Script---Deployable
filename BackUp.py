@@ -1,4 +1,7 @@
 import pandas as pd
+from openpyxl import load_workbook
+from openpyxl.styles import PatternFill
+from openpyxl.utils import get_column_letter
 
 # ==========================================================
 # CONFIGURATION
@@ -39,6 +42,9 @@ print(
 
 df["FAILURE_REASON"] = ""
 df["WARNING_MESSAGE"] = ""
+df["ERROR_COLUMNS"] = ""
+df["WARNING_COLUMNS"] = ""
+
 
 
 # ==========================================
@@ -112,6 +118,13 @@ for _, rule in mandatory_rules.iterrows():
             f"{field} Missing | "
         )
 
+        df.loc[
+            field_mask,
+            "ERROR_COLUMNS"
+        ] += (
+            f"{field}|"
+        )
+
     elif severity == "WARNING":
 
         df.loc[
@@ -119,6 +132,13 @@ for _, rule in mandatory_rules.iterrows():
             "WARNING_MESSAGE"
         ] += (
             f"{field} Missing | "
+        )
+
+        df.loc[
+            field_mask,
+            "WARNING_COLUMNS"
+        ] += (
+            f"{field}|"
         )
 
 # ==========================================================
@@ -138,8 +158,18 @@ df.loc[
     duplicate_mask,
     "FAILURE_REASON"
 ] += (
-    "Duplicate H_ATTRIBUTE15 and "
-    "S_SUPPLIER_SITE_NAME combination | "
+    "Duplicate record found. The same H_ATTRIBUTE15 and "
+    "S_SUPPLIER_SITE_NAME combination already exists. "
+    "Each S_SUPPLIER_SITE_NAME must be unique for the "
+    "specified H_ATTRIBUTE15 | "
+)
+
+df.loc[
+    duplicate_mask,
+    "ERROR_COLUMNS"
+] += (
+    "H_ATTRIBUTE15|"
+    "S_SUPPLIER_SITE_NAME|"
 )
 
 # ==========================================================
@@ -158,7 +188,17 @@ site_len_mask = (
 df.loc[
     site_len_mask,
     "FAILURE_REASON"
-] += "S_SUPPLIER_SITE_NAME exceeds 15 characters | "
+] += (
+    "S_SUPPLIER_SITE_NAME exceeds the maximum "
+    "length of 15 characters | "
+)
+
+df.loc[
+    site_len_mask,
+    "ERROR_COLUMNS"
+] += (
+    "S_SUPPLIER_SITE_NAME|"
+)
 
 # ==========================================================
 # RULE 3
@@ -179,7 +219,16 @@ payment_mask = (
 df.loc[
     payment_mask,
     "FAILURE_REASON"
-] += "S_SITE_PAY_PAYMENT_PRIORITY should be numeric | "
+] += (
+    "S_SITE_PAY_PAYMENT_PRIORITY must be data type numeric | "
+)
+
+df.loc[
+    payment_mask,
+    "ERROR_COLUMNS"
+] += (
+    "S_SITE_PAY_PAYMENT_PRIORITY|"
+)
 
 # ==========================================================
 # RULE 4
@@ -200,7 +249,16 @@ first_name_mask = (
 df.loc[
     first_name_mask,
     "FAILURE_REASON"
-] += "CONTACT_FIRST_NAME not uppercase | "
+] += (
+    "CONTACT_FIRST_NAME must be entered in uppercase | "
+)
+
+df.loc[
+    first_name_mask,
+    "ERROR_COLUMNS"
+] += (
+    "CONTACT_FIRST_NAME|"
+)
 
 # ==========================================================
 # RULE 5
@@ -221,7 +279,16 @@ last_name_mask = (
 df.loc[
     last_name_mask,
     "FAILURE_REASON"
-] += "CONTACT_LAST_NAME not uppercase | "
+] += (
+    "CONTACT_LAST_NAME must be entered in uppercase | "
+)
+
+df.loc[
+    last_name_mask,
+    "ERROR_COLUMNS"
+] += (
+    "CONTACT_LAST_NAME|"
+)
 
 # ==========================================================
 # RULE 6
@@ -287,7 +354,15 @@ df.loc[
     invalid_notification_mask,
     "FAILURE_REASON"
 ] += (
-    "S_SUPP_SITE_NOTIF_METHOD must be EMAIL | "
+    "S_SUPP_SITE_NOTIF_METHOD must be EMAIL when "
+    "S_EMAIL_ADDRESS is provided | "
+)
+
+df.loc[
+    invalid_notification_mask,
+    "ERROR_COLUMNS"
+] += (
+    "S_SUPP_SITE_NOTIF_METHOD|"
 )
 
 df.loc[
@@ -295,6 +370,13 @@ df.loc[
     "WARNING_MESSAGE"
 ] += (
     "Invalid Supplier Notification Method | "
+)
+
+df.loc[
+    invalid_notification_mask,
+    "WARNING_COLUMNS"
+] += (
+    "S_SUPP_SITE_NOTIF_METHOD|"
 )
 
 # ==========================================================
@@ -313,7 +395,16 @@ swbr_mask = (
 df.loc[
     swbr_mask,
     "FAILURE_REASON"
-] += "S_OPERATING_UNIT should be SWBR SS OU | "
+] += (
+    "S_OPERATING_UNIT must be SWBR SS OU | "
+)
+
+df.loc[
+    swbr_mask,
+    "ERROR_COLUMNS"
+] += (
+    "S_OPERATING_UNIT|"
+)
 
 
 # ==========================================================
@@ -354,6 +445,13 @@ df.loc[
 ] += (
     "S_SITE_GLOBAL_ATTR_CATEGORY must be "
     "JL.BR.APXVDMVD.SITES for Brazil | "
+)
+
+df.loc[
+    invalid_category_mask,
+    "ERROR_COLUMNS"
+] += (
+    "S_SITE_GLOBAL_ATTR_CATEGORY|"
 )
 
 # ----------------------------------------------------------
@@ -405,8 +503,21 @@ df.loc[
     dependency_mask,
     "FAILURE_REASON"
 ] += (
-    "S_SITE_GLOBAL_ATTRIBUTE9 populated but "
-    "S_SITE_GLOBAL_ATTRIBUTE10/11/12 missing | "
+    "S_SITE_GLOBAL_ATTRIBUTE10, "
+    "S_SITE_GLOBAL_ATTRIBUTE11, and "
+    "S_SITE_GLOBAL_ATTRIBUTE12 are required "
+    "when S_SITE_GLOBAL_ATTRIBUTE9 is populated "
+    "for Suppliers in Brazil | "
+)
+
+df.loc[
+    dependency_mask,
+    "ERROR_COLUMNS"
+] += (
+    "S_SITE_GLOBAL_ATTRIBUTE9|"
+    "S_SITE_GLOBAL_ATTRIBUTE10|"
+    "S_SITE_GLOBAL_ATTRIBUTE11|"
+    "S_SITE_GLOBAL_ATTRIBUTE12|"
 )
 
 df.loc[
@@ -414,6 +525,15 @@ df.loc[
     "WARNING_MESSAGE"
 ] += (
     "Missing dependent Site Global Attributes | "
+)
+
+df.loc[
+    dependency_mask,
+    "WARNING_COLUMNS"
+] += (
+    "S_SITE_GLOBAL_ATTRIBUTE10|"
+    "S_SITE_GLOBAL_ATTRIBUTE11|"
+    "S_SITE_GLOBAL_ATTRIBUTE12|"
 )
 # ==========================================================
 # RULE 10
@@ -461,32 +581,64 @@ df.loc[
     bank_dependency_mask,
     "FAILURE_REASON"
 ] += (
-    "Incomplete Banking Information - "
-    "all bank fields must be populated | "
+    "All bank-related fields are required when banking information is provided. | "
+)
+
+df.loc[
+    bank_dependency_mask,
+    "ERROR_COLUMNS"
+] += (
+    "S_BANK_NAME|"
+    "S_BANK_NUM|"
+    "S_BANK_COUNTRY|"
+    "S_BANK_BRANCH_NAME|"
+    "S_BANK_BRANCH_NUM|"
+    "S_BANK_BRANCH_TYPE|"
+    "S_ACCOUNT_NUM|"
+    "S_ACCOUNT_NAME|"
 )
 
 # ==========================================================
 # RULE 11
-# A_ADDRESS_LINE1 SPECIAL CHARACTER VALIDATION
+# ADDRESS SPECIAL CHARACTER VALIDATION
 # ==========================================================
 
-invalid_address_mask = (
-    df["A_ADDRESS_LINE1"]
-    .fillna("")
-    .astype(str)
-    .str.contains(
-        r"[^A-Za-z0-9\s\.,\-/&()]",
-        regex=True
+address_columns = [
+    "A_ADDRESS_LINE1",
+    "A_ADDRESS_LINE2",
+    "A_ADDRESS_LINE3",
+    "A_ADDRESS_LINE4"
+]
+
+for col in address_columns:
+
+    if col not in df.columns:
+        continue
+
+    invalid_address_mask = (
+        df[col]
+        .fillna("")
+        .astype(str)
+        .str.contains(
+            r"[^A-Za-z0-9\s\.\,\-\/&()#]",
+            regex=True
+        )
     )
-)
 
-df.loc[
-    invalid_address_mask,
-    "FAILURE_REASON"
-] += (
-    "A_ADDRESS_LINE1 contains invalid special characters | "
-)
+    df.loc[
+        invalid_address_mask,
+        "FAILURE_REASON"
+    ] += (
+        f"{col} contains invalid characters. "
+        "Only English characters are allowed. | "
+    )
 
+    df.loc[
+        invalid_address_mask,
+        "ERROR_COLUMNS"
+    ] += (
+        f"{col}|"
+    )
 # ==========================================================
 # RULE 12
 # PAYMENT PRIORITY / PAY GROUP WARNING
@@ -518,10 +670,13 @@ df.loc[
     "S_SITE_PAY_PAY_GROUP is blank | "
 )
 
-# ==========================================================
-# RULE 13
-# COUNTRY SPECIFIC ADDRESS VALIDATION
-# ==========================================================
+df.loc[
+    pay_warning_mask,
+    "WARNING_COLUMNS"
+] += (
+    "S_SITE_PAY_PAYMENT_PRIORITY|"
+    "S_SITE_PAY_PAY_GROUP|"
+)
 
 # ==========================================================
 # RULE 13
@@ -529,10 +684,8 @@ df.loc[
 # ==========================================================
 
 address_rule_df = pd.read_excel(
-    "input/Country_Address_Ruless.xlsx"
+    "config/Country_Address_Ruless.xlsx"
 )
-
-# Take only mandatory rows
 
 mandatory_address_rules = (
     address_rule_df[
@@ -585,18 +738,21 @@ for idx, row in df.iterrows():
                 f"for country {country} | "
             )
 
+            df.loc[
+                idx,
+                "ERROR_COLUMNS"
+            ] += (
+                f"{field_name}|"
+            )
+
 # ==========================================================
 # RULE 14
 # PAYMENT TERMS LOV VALIDATION
 # ==========================================================
 
-# Load Payment Terms Reference File
-
 payment_terms_df = pd.read_excel(
-    "input/PAY_TERMS.xlsx"
+    "config/PAY_TERMS.xlsx"
 )
-
-# Create LOV Set
 
 valid_payment_terms = set(
     payment_terms_df["S_SITE_PAY_TERMS"]
@@ -605,8 +761,6 @@ valid_payment_terms = set(
     .str.strip()
     .str.upper()
 )
-
-# Source Values
 
 source_payment_terms = (
     df["S_SITE_PAY_TERMS"]
@@ -622,8 +776,6 @@ invalid_pay_term_mask = (
     (~source_payment_terms.isin(valid_payment_terms))
 )
 
-# Validation Error
-
 df.loc[
     invalid_pay_term_mask,
     "FAILURE_REASON"
@@ -631,7 +783,12 @@ df.loc[
     "S_SITE_PAY_TERMS not found in PAYMENT_TERM LOV | "
 )
 
-# Warning Message
+df.loc[
+    invalid_pay_term_mask,
+    "ERROR_COLUMNS"
+] += (
+    "S_SITE_PAY_TERMS|"
+)
 
 df.loc[
     invalid_pay_term_mask,
@@ -640,6 +797,12 @@ df.loc[
     "Invalid Payment Term - review PAYMENT_TERM reference | "
 )
 
+df.loc[
+    invalid_pay_term_mask,
+    "WARNING_COLUMNS"
+] += (
+    "S_SITE_PAY_TERMS|"
+)
 # ==========================================================
 # RULE 15
 # PAYMENT METHOD LOV VALIDATION
@@ -648,7 +811,7 @@ df.loc[
 # Load Payment Method Reference File
 
 payment_method_df = pd.read_excel(
-    "input/PAY_METHOD.xlsx"
+    "config/PAY_METHOD.xlsx"
 )
 
 # Create LOV Set
@@ -686,6 +849,13 @@ df.loc[
     "S_DEF_SITE_PAY_METHOD not found in PAYMENT_METHOD LOV | "
 )
 
+df.loc[
+    invalid_payment_method_mask,
+    "ERROR_COLUMNS"
+] += (
+    "S_DEF_SITE_PAY_METHOD|"
+)
+
 # Warning Message
 
 df.loc[
@@ -693,6 +863,13 @@ df.loc[
     "WARNING_MESSAGE"
 ] += (
     "Invalid Payment Method - review PAYMENT_METHOD reference | "
+)
+
+df.loc[
+    invalid_payment_method_mask,
+    "WARNING_COLUMNS"
+] += (
+    "S_DEF_SITE_PAY_METHOD|"
 )
 
 # ==========================================================
@@ -703,7 +880,7 @@ df.loc[
 # Load Supplier Type Reference File
 
 supplier_type_df = pd.read_excel(
-    "input/SUPPLIER_TYPE.xlsx"
+    "config/SUPPLIER_TYPE.xlsx"
 )
 
 # Create LOV Set
@@ -741,6 +918,13 @@ df.loc[
     "H_SUPPLIER_TYPE not found in SUPPLIER_TYPE LOV | "
 )
 
+df.loc[
+    invalid_supplier_type_mask,
+    "ERROR_COLUMNS"
+] += (
+    "H_SUPPLIER_TYPE|"
+)
+
 # Warning Message
 
 df.loc[
@@ -748,6 +932,13 @@ df.loc[
     "WARNING_MESSAGE"
 ] += (
     "Invalid Supplier Type - review SUPPLIER_TYPE reference | "
+)
+
+df.loc[
+    invalid_supplier_type_mask,
+    "WARNING_COLUMNS"
+] += (
+    "H_SUPPLIER_TYPE|"
 )
 
 # ==========================================================
@@ -764,6 +955,34 @@ argentina_category_mask = (
     == "JL.AR.APXVDMVD.SUPPLIER_SITES"
 )
 
+argentina_attr17_mask = (
+    argentina_category_mask
+    &
+    (
+        df["S_SITE_GLOBAL_ATTRIBUTE17"]
+        .fillna("")
+        .astype(str)
+        .str.strip()
+        == ""
+    )
+)
+
+df.loc[
+    argentina_attr17_mask,
+    "FAILURE_REASON"
+] += (
+    "S_SITE_GLOBAL_ATTRIBUTE17 mandatory when "
+    "S_SITE_GLOBAL_ATTR_CATEGORY = "
+    "JL.AR.APXVDMVD.SUPPLIER_SITES | "
+)
+
+df.loc[
+    argentina_attr17_mask,
+    "ERROR_COLUMNS"
+] += (
+    "S_SITE_GLOBAL_ATTR_CATEGORY|"
+    "S_SITE_GLOBAL_ATTRIBUTE17|"
+)
 # ----------------------------------------------------------
 # ATTRIBUTE17 MANDATORY
 # ----------------------------------------------------------
@@ -791,10 +1010,25 @@ df.loc[
 
 df.loc[
     attribute17_missing_mask,
+    "ERROR_COLUMNS"
+] += (
+    "S_SITE_GLOBAL_ATTR_CATEGORY|"
+    "S_SITE_GLOBAL_ATTRIBUTE17|"
+)
+
+df.loc[
+    attribute17_missing_mask,
     "WARNING_MESSAGE"
 ] += (
     "Argentina Localization Warning - "
     "S_SITE_GLOBAL_ATTRIBUTE17 missing | "
+)
+
+df.loc[
+    attribute17_missing_mask,
+    "WARNING_COLUMNS"
+] += (
+    "S_SITE_GLOBAL_ATTRIBUTE17|"
 )
 
 
@@ -826,9 +1060,23 @@ for column in df.columns:
 
     df.loc[
         na_mask,
+        "ERROR_COLUMNS"
+    ] += (
+        f"{column}|"
+    )
+
+    df.loc[
+        na_mask,
         "WARNING_MESSAGE"
     ] += (
         f"{column} contains invalid #N/A value | "
+    )
+
+    df.loc[
+        na_mask,
+        "WARNING_COLUMNS"
+    ] += (
+        f"{column}|"
     )
 
 # ==========================================================
@@ -862,26 +1110,64 @@ df.loc[
     "H_SUPPLIER_NAME_ALT should be blank for Brazil suppliers | "
 )
 
+df.loc[
+    br_alt_name_mask,
+    "WARNING_COLUMNS"
+] += (
+    "H_SUPPLIER_NAME_ALT|"
+)
+
 # ==========================================================
 # RULE 20
 # INACTIVE SUPPLIER WARNING
 # ==========================================================
 
+today = pd.Timestamp.today().normalize()
+
+h_end_date = pd.to_datetime(
+    df["H_END_DATE_ACTIVE"],
+    errors="coerce"
+)
+
+s_inactive_date = pd.to_datetime(
+    df["S_INACTIVE_DATE"],
+    errors="coerce"
+)
+
 inactive_supplier_mask = (
-    df["S_INACTIVE_DATE"]
-    .fillna("")
-    .astype(str)
-    .str.strip()
-    != ""
+    (
+        h_end_date.notna()
+    )
+    &
+    (
+        h_end_date < today
+    )
+) | (
+    (
+        s_inactive_date.notna()
+    )
+    &
+    (
+        s_inactive_date < today
+    )
 )
 
 df.loc[
     inactive_supplier_mask,
     "WARNING_MESSAGE"
 ] += (
-    "Supplier is already inactive. "
+    "Supplier appears to be inactive based on "
+    "H_END_DATE_ACTIVE or S_INACTIVE_DATE. "
     "Please verify whether reactivation is required "
     "before submitting the request | "
+)
+
+df.loc[
+    inactive_supplier_mask,
+    "WARNING_COLUMNS"
+] += (
+    "H_END_DATE_ACTIVE|"
+    "S_INACTIVE_DATE|"
 )
 
 # ==========================================================
@@ -954,7 +1240,7 @@ attribute10_mask = (
 )
 
 # ------------------------------------------
-# LENGTH > 9  → ERROR
+# LENGTH > 9 → ERROR
 # ------------------------------------------
 
 attribute10_error_mask = (
@@ -974,11 +1260,18 @@ df.loc[
     attribute10_error_mask,
     "FAILURE_REASON"
 ] += (
-    "S_SITE_GLOBAL_ATTRIBUTE10 cannot exceed 9 digits | "
+    "S_SITE_GLOBAL_ATTRIBUTE10 must not exceed 9 digits | "
+)
+
+df.loc[
+    attribute10_error_mask,
+    "ERROR_COLUMNS"
+] += (
+    "S_SITE_GLOBAL_ATTRIBUTE10|"
 )
 
 # ------------------------------------------
-# LENGTH < 9 → PREFIX ZEROES
+# LENGTH <= 9 → PREFIX ZEROES
 # ------------------------------------------
 
 attribute10_transform_mask = (
@@ -1042,9 +1335,25 @@ df.loc[
 
 df.loc[
     rfq_flag_mask,
+    "ERROR_COLUMNS"
+] += (
+    "S_RFQ_ONLY_SITE_FLAG(Y/N)|"
+    "A_PURPOSE_RFQ_FLAG(Y/N)|"
+)
+
+df.loc[
+    rfq_flag_mask,
     "WARNING_MESSAGE"
 ] += (
     "RFQ Flag Validation Failed | "
+)
+
+df.loc[
+    rfq_flag_mask,
+    "WARNING_COLUMNS"
+] += (
+    "S_RFQ_ONLY_SITE_FLAG(Y/N)|"
+    "A_PURPOSE_RFQ_FLAG(Y/N)|"
 )
 
 # ==========================================================
@@ -1093,13 +1402,20 @@ df.loc[
     "Supplier Site Name and Address Name do not match | "
 )
 
+df.loc[
+    site_address_mismatch_mask,
+    "WARNING_COLUMNS"
+] += (
+    "S_SUPPLIER_SITE_NAME|"
+    "A_ADDRESS_NAME|"
+)
 # ==========================================================
 # RULE 25B
 # COUNTRY / STATE / CITY LOOKUP VALIDATION
 # ==========================================================
 
 country_city_state_df = pd.read_excel(
-    "temp/COUNTRY_STATE_CITY_COMBINATION.xlsx"
+    "config/COUNTRY_STATE_CITY_COMBINATION.xlsx"
 )
 
 valid_countries = set(
@@ -1148,6 +1464,13 @@ df.loc[
     "Invalid Country in Country Lookup | "
 )
 
+df.loc[
+    invalid_country_mask,
+    "WARNING_COLUMNS"
+] += (
+    "S_COUNTRY|"
+)
+
 # ----------------------------------------------------------
 # CITY VALIDATION
 # ----------------------------------------------------------
@@ -1173,6 +1496,13 @@ df.loc[
     "Invalid City in City Lookup | "
 )
 
+df.loc[
+    invalid_city_mask,
+    "WARNING_COLUMNS"
+] += (
+    "A_CITY|"
+)
+
 # ----------------------------------------------------------
 # STATE VALIDATION
 # ----------------------------------------------------------
@@ -1196,6 +1526,13 @@ df.loc[
     "WARNING_MESSAGE"
 ] += (
     "Invalid State in State Lookup | "
+)
+
+df.loc[
+    invalid_state_mask,
+    "WARNING_COLUMNS"
+] += (
+    "A_STATE|"
 )
 
 # ==========================================================
@@ -1238,6 +1575,13 @@ for column in consistency_columns:
         "FAILURE_REASON"
     ] += (
         f"{column} is inconsistent for the same supplier | "
+    )
+
+    df.loc[
+        inconsistency_mask,
+        "ERROR_COLUMNS"
+    ] += (
+        f"{column}|"
     )
 
 # ==========================================================
@@ -1286,16 +1630,38 @@ df.loc[
     "H_TAX_PAYER_ID is assigned to multiple suppliers | "
 )
 
+df.loc[
+    duplicate_tax_id_mask,
+    "ERROR_COLUMNS"
+] += (
+    "H_TAX_PAYER_ID|"
+)
+
+from openpyxl import load_workbook
+from openpyxl.styles import PatternFill
+from openpyxl.utils import get_column_letter
+
 # ==========================================================
 # SPLIT VALID / INVALID
 # ==========================================================
 
 error_df = df[
-    df["FAILURE_REASON"] != ""
+    df["FAILURE_REASON"]
+    .fillna("")
+    .astype(str)
+    .str.strip()
+    != ""
 ].copy()
 
+# Valid = No Errors
+# Warnings are still considered loadable
+
 valid_df = df[
-    df["FAILURE_REASON"] == ""
+    df["FAILURE_REASON"]
+    .fillna("")
+    .astype(str)
+    .str.strip()
+    == ""
 ].copy()
 
 # ==========================================================
@@ -1311,13 +1677,42 @@ warning_df = df[
 ].copy()
 
 # ==========================================================
+# CONSOLIDATED VALIDATION REPORT
+# ERRORS + WARNINGS
+# ==========================================================
+
+validation_report_df = df[
+    (
+        df["FAILURE_REASON"]
+        .fillna("")
+        .astype(str)
+        .str.strip()
+        != ""
+    )
+    |
+    (
+        df["WARNING_MESSAGE"]
+        .fillna("")
+        .astype(str)
+        .str.strip()
+        != ""
+    )
+].copy()
+
+# ==========================================================
 # ADD SOURCE ROW NUMBER
 # ==========================================================
 
-error_df.insert(
+validation_report_df.insert(
     0,
     "SOURCE_ROW_NUMBER",
-    error_df.index + 2
+    validation_report_df.index + 2
+)
+
+warning_df.insert(
+    0,
+    "SOURCE_ROW_NUMBER",
+    warning_df.index + 2
 )
 
 # ==========================================================
@@ -1327,7 +1722,9 @@ error_df.insert(
 valid_df = valid_df.drop(
     columns=[
         "FAILURE_REASON",
-        "WARNING_MESSAGE"
+        "WARNING_MESSAGE",
+        "ERROR_COLUMNS",
+        "WARNING_COLUMNS"
     ],
     errors="ignore"
 )
@@ -1337,14 +1734,201 @@ valid_df.to_excel(
     index=False
 )
 
-error_df.to_csv(
-    "output/Supplier_Validation_Error.csv",
+# ==========================================================
+# CONSOLIDATED VALIDATION REPORT
+# ==========================================================
+
+validation_report_df.to_excel(
+    "output/Supplier_Validation_Report.xlsx",
     index=False
 )
 
-warning_df.to_csv(
-    "output/Supplier_Warning_Report.csv",
-    index=False
+# ==========================================================
+# COLOR ERROR + WARNING CELLS
+# ==========================================================
+
+error_fill = PatternFill(
+    start_color="F4B084",
+    end_color="F4B084",
+    fill_type="solid"
+)
+
+warning_fill = PatternFill(
+    start_color="FFE699",
+    end_color="FFE699",
+    fill_type="solid"
+)
+
+wb = load_workbook(
+    "output/Supplier_Validation_Report.xlsx"
+)
+
+ws = wb.active
+
+headers = {}
+
+for col in range(1, ws.max_column + 1):
+
+    headers[
+        ws.cell(1, col).value
+    ] = col
+
+# ----------------------------------------------------------
+# COLOR ERROR CELLS (RED)
+# ----------------------------------------------------------
+
+if "ERROR_COLUMNS" in headers:
+
+    for row in range(2, ws.max_row + 1):
+
+        error_cols = str(
+            ws.cell(
+                row,
+                headers["ERROR_COLUMNS"]
+            ).value or ""
+        )
+
+        for col_name in error_cols.split("|"):
+
+            col_name = col_name.strip()
+
+            if (
+                col_name != ""
+                and
+                col_name in headers
+            ):
+
+                ws.cell(
+                    row,
+                    headers[col_name]
+                ).fill = error_fill
+
+# ----------------------------------------------------------
+# COLOR WARNING CELLS (YELLOW)
+# ----------------------------------------------------------
+
+if "WARNING_COLUMNS" in headers:
+
+    for row in range(2, ws.max_row + 1):
+
+        warning_cols = str(
+            ws.cell(
+                row,
+                headers["WARNING_COLUMNS"]
+            ).value or ""
+        )
+
+        for col_name in warning_cols.split("|"):
+
+            col_name = col_name.strip()
+
+            if (
+                col_name != ""
+                and
+                col_name in headers
+            ):
+
+                existing_fill = ws.cell(
+                    row,
+                    headers[col_name]
+                ).fill
+
+                # Do not overwrite error color
+                if (
+                    existing_fill.fill_type != "solid"
+                    or
+                    existing_fill.start_color.rgb
+                    not in [
+                        "00F4CCCC",
+                        "FFF4CCCC"
+                    ]
+                ):
+
+                    ws.cell(
+                        row,
+                        headers[col_name]
+                    ).fill = warning_fill
+
+# ----------------------------------------------------------
+# HIDE HELPER COLUMNS
+# ----------------------------------------------------------
+
+if "ERROR_COLUMNS" in headers:
+
+    col_letter = get_column_letter(
+        headers["ERROR_COLUMNS"]
+    )
+
+    ws.column_dimensions[
+        col_letter
+    ].hidden = True
+
+if "WARNING_COLUMNS" in headers:
+
+    col_letter = get_column_letter(
+        headers["WARNING_COLUMNS"]
+    )
+
+    ws.column_dimensions[
+        col_letter
+    ].hidden = True
+
+# ----------------------------------------------------------
+# LEGEND
+# ----------------------------------------------------------
+
+from openpyxl.styles import Font
+
+ws.insert_rows(1, 2)
+
+# Legend Title
+
+ws["A1"] = "Legend:"
+ws["A1"].font = Font(
+    bold=True
+)
+
+# Error Indicator Cell
+
+ws["B1"] = ""
+ws["B1"].fill = error_fill
+
+ws["C1"] = "Validation Error (Fix Required)"
+ws["C1"].font = Font(
+    bold=True
+)
+
+# Warning Indicator Cell
+
+ws["D1"] = ""
+ws["D1"].fill = warning_fill
+
+ws["E1"] = "Warning (Review Recommended)"
+ws["E1"].font = Font(
+    bold=True
+)
+
+# Make Color Boxes Visible
+
+ws.column_dimensions["B"].width = 4
+ws.column_dimensions["D"].width = 4
+
+# Freeze Header Row
+
+ws.freeze_panes = "A3"
+
+# Enable Auto Filter on Actual Header Row
+
+last_col_letter = get_column_letter(
+    ws.max_column
+)
+
+ws.auto_filter.ref = (
+    f"A3:{last_col_letter}{ws.max_row}"
+)
+
+wb.save(
+    "output/Supplier_Validation_Report.xlsx"
 )
 
 # ==========================================================
@@ -1392,8 +1976,7 @@ print("")
 print("Generated Files")
 print("----------------")
 print("output/Supplier_Output.xlsx")
-print("output/Supplier_Validation_Error.csv")
-print("output/Supplier_Warning_Report.csv")
+print("output/Supplier_Validation_Report.xlsx")
 print("output/Validation_Summary.csv")
 print("output/Supplier_WebADI_Output.xlsx")
 print("=" * 60)
