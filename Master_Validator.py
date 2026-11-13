@@ -451,7 +451,23 @@ ga12 = (
     .str.strip()
 )
 
+ga13 = (
+    df["S_SITE_GLOBAL_ATTRIBUTE13"]
+    .fillna("")
+    .astype(str)
+    .str.strip()
+)
+
+ga15 = (
+    df["S_SITE_GLOBAL_ATTRIBUTE15"]
+    .fillna("")
+    .astype(str)
+    .str.strip()
+)
+
 dependency_mask = (
+    br_country_mask
+    &
     (ga9 != "")
     &
     (
@@ -460,6 +476,10 @@ dependency_mask = (
         (ga11 == "")
         |
         (ga12 == "")
+        |
+        (ga13 == "")
+        |
+        (ga15 == "")
     )
 )
 
@@ -468,8 +488,10 @@ df.loc[
     "FAILURE_REASON"
 ] += (
     "S_SITE_GLOBAL_ATTRIBUTE10, "
-    "S_SITE_GLOBAL_ATTRIBUTE11, and "
-    "S_SITE_GLOBAL_ATTRIBUTE12 are required "
+    "S_SITE_GLOBAL_ATTRIBUTE11, "
+    "S_SITE_GLOBAL_ATTRIBUTE12, "
+    "S_SITE_GLOBAL_ATTRIBUTE13, and "
+    "S_SITE_GLOBAL_ATTRIBUTE15 are required "
     "when S_SITE_GLOBAL_ATTRIBUTE9 is populated "
     "for Suppliers in Brazil | "
 )
@@ -482,6 +504,8 @@ df.loc[
     "S_SITE_GLOBAL_ATTRIBUTE10|"
     "S_SITE_GLOBAL_ATTRIBUTE11|"
     "S_SITE_GLOBAL_ATTRIBUTE12|"
+    "S_SITE_GLOBAL_ATTRIBUTE13|"
+    "S_SITE_GLOBAL_ATTRIBUTE15|"
 )
 
 df.loc[
@@ -498,6 +522,8 @@ df.loc[
     "S_SITE_GLOBAL_ATTRIBUTE10|"
     "S_SITE_GLOBAL_ATTRIBUTE11|"
     "S_SITE_GLOBAL_ATTRIBUTE12|"
+    "S_SITE_GLOBAL_ATTRIBUTE13|"
+    "S_SITE_GLOBAL_ATTRIBUTE15|"
 )
 # ==========================================================
 # RULE 10
