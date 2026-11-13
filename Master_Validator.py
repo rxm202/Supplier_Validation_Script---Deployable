@@ -232,62 +232,26 @@ df.loc[
 
 # ==========================================================
 # RULE 4
-# CONTACT FIRST NAME UPPERCASE
+# CONTACT FIRST NAME UPPERCASE TRANSFORMATION
 # ==========================================================
 
-first_name_mask = (
-    df["CONTACT_FIRST_NAME"]
-    .fillna("")
-    .astype(str)
-    !=
+df["CONTACT_FIRST_NAME"] = (
     df["CONTACT_FIRST_NAME"]
     .fillna("")
     .astype(str)
     .str.upper()
-)
-
-df.loc[
-    first_name_mask,
-    "FAILURE_REASON"
-] += (
-    "CONTACT_FIRST_NAME must be entered in uppercase | "
-)
-
-df.loc[
-    first_name_mask,
-    "ERROR_COLUMNS"
-] += (
-    "CONTACT_FIRST_NAME|"
 )
 
 # ==========================================================
 # RULE 5
-# CONTACT LAST NAME UPPERCASE
+# CONTACT LAST NAME UPPERCASE TRANSFORMATION
 # ==========================================================
 
-last_name_mask = (
-    df["CONTACT_LAST_NAME"]
-    .fillna("")
-    .astype(str)
-    !=
+df["CONTACT_LAST_NAME"] = (
     df["CONTACT_LAST_NAME"]
     .fillna("")
     .astype(str)
     .str.upper()
-)
-
-df.loc[
-    last_name_mask,
-    "FAILURE_REASON"
-] += (
-    "CONTACT_LAST_NAME must be entered in uppercase | "
-)
-
-df.loc[
-    last_name_mask,
-    "ERROR_COLUMNS"
-] += (
-    "CONTACT_LAST_NAME|"
 )
 
 # ==========================================================
@@ -1549,8 +1513,7 @@ df.loc[
 consistency_columns = [
     "H_SUPPLIER_NAME_ALT",
     "H_TAX_PAYER_ID",
-    "H_TAX_REGISTRATION_NUMBER",
-    "H_SUPPLIER_TYPE"
+    "H_TAX_REGISTRATION_NUMBER"
 ]
 
 for column in consistency_columns:
