@@ -1176,7 +1176,8 @@ df.loc[
 # ==========================================================
 
 doc_type_df = pd.read_excel(
-    "config/BR_DOCUMENT_TYPE.xlsx"
+    "config/BR_DOCUMENT_TYPE.xlsx",
+    dtype={"Value": str}
 )
 
 doc_type_mapping = dict(
@@ -1187,6 +1188,8 @@ doc_type_mapping = dict(
         .str.upper(),
 
         doc_type_df["Value"]
+        .astype(str)
+        .str.strip()
     )
 )
 
@@ -1201,15 +1204,11 @@ br_mask = (
 
 for idx in df[br_mask].index:
 
+    raw_val = df.at[idx, "S_SITE_GLOBAL_ATTRIBUTE9"]
     value = (
-        str(
-            df.at[
-                idx,
-                "S_SITE_GLOBAL_ATTRIBUTE9"
-            ]
-        )
-        .strip()
-        .upper()
+        ""
+        if pd.isna(raw_val)
+        else str(raw_val).strip().upper()
     )
 
     if value in doc_type_mapping:
@@ -1217,7 +1216,7 @@ for idx in df[br_mask].index:
         df.at[
             idx,
             "S_SITE_GLOBAL_ATTRIBUTE9"
-        ] = doc_type_mapping[value]
+        ] = str(doc_type_mapping[value])
 
     else:
 
