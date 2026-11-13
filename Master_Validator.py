@@ -1193,16 +1193,13 @@ doc_type_mapping = dict(
     )
 )
 
-br_mask = (
-    df["S_COUNTRY"]
-    .fillna("")
-    .astype(str)
-    .str.strip()
-    .str.upper()
-    == "BR"
-)
+for idx in df.index:
 
-for idx in df[br_mask].index:
+    country = (
+        ""
+        if pd.isna(df.at[idx, "S_COUNTRY"])
+        else str(df.at[idx, "S_COUNTRY"]).strip().upper()
+    )
 
     raw_val = df.at[idx, "S_SITE_GLOBAL_ATTRIBUTE9"]
     value = (
@@ -1211,19 +1208,29 @@ for idx in df[br_mask].index:
         else str(raw_val).strip().upper()
     )
 
-    if value in doc_type_mapping:
+    if country in ["BR", "BRAZIL"]:
 
-        df.at[
-            idx,
-            "S_SITE_GLOBAL_ATTRIBUTE9"
-        ] = str(doc_type_mapping[value])
+        if value in doc_type_mapping:
 
-    else:
+            df.at[
+                idx,
+                "S_SITE_GLOBAL_ATTRIBUTE9"
+            ] = str(doc_type_mapping[value])
+
+        else:
+
+            df.at[
+                idx,
+                "S_SITE_GLOBAL_ATTRIBUTE9"
+            ] = "3"
+
+    elif value == "OTHERS":
 
         df.at[
             idx,
             "S_SITE_GLOBAL_ATTRIBUTE9"
         ] = "3"
+
 
 # ==========================================================
 # RULE 22
