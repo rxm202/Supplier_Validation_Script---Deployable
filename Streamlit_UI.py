@@ -349,11 +349,11 @@ if menu == "🏠 Dashboard":
             "Validation KPI Dashboard"
         )
 
-        show_kpis(metrics)
+        show_charts(metrics)
 
         st.write("")
 
-        show_charts(metrics)
+        show_kpis(metrics)
 
         # ======================================================
         # KPI DRILL DOWN
