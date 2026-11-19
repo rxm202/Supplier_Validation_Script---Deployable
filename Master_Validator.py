@@ -1559,6 +1559,59 @@ df.loc[
     "H_SUPPLIER_NAME|"
     "H_ATTRIBUTE15|"
 )
+
+# ==========================================================
+# RULE 26A
+# TAX REGISTRATION NUMBER CONSISTENCY
+# ==========================================================
+
+inconsistent_tax_reg_suppliers = (
+
+    df.groupby("H_SUPPLIER_NAME")[
+        "H_TAX_REGISTRATION_NUMBER"
+    ]
+
+    .apply(
+        lambda x:
+        x.fillna("")
+        .astype(str)
+        .str.strip()
+        .replace("", pd.NA)
+        .dropna()
+        .nunique()
+    )
+
+    .loc[lambda x: x > 1]
+    .index
+)
+
+tax_reg_mask = (
+
+    df["H_SUPPLIER_NAME"]
+    .fillna("")
+    .astype(str)
+    .str.strip()
+    .isin(
+        inconsistent_tax_reg_suppliers
+    )
+
+)
+
+df.loc[
+    tax_reg_mask,
+    "FAILURE_REASON"
+] += (
+    "H_TAX_REGISTRATION_NUMBER is inconsistent "
+    "for the same H_SUPPLIER_NAME | "
+)
+
+df.loc[
+    tax_reg_mask,
+    "ERROR_COLUMNS"
+] += (
+    "H_SUPPLIER_NAME|"
+    "H_TAX_REGISTRATION_NUMBER|"
+)
 # ==========================================================
 # RULE 27
 # DUPLICATE TAX PAYER ID ACROSS SUPPLIERS
