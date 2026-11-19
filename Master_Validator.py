@@ -1537,6 +1537,8 @@ df.loc[
 # ==========================================================
 
 consistency_columns = [
+
+    "H_SUPPLIER_NUMBER",
     "H_SUPPLIER_NAME_ALT",
     "H_TAX_PAYER_ID",
     "H_TAX_REGISTRATION_NUMBER"
@@ -1544,32 +1546,48 @@ consistency_columns = [
 
 for column in consistency_columns:
 
-    inconsistent_suppliers = (
+    inconsistent_groups = (
 
-        df.groupby("H_ATTRIBUTE15")[column]
+        df.groupby(
+            [
+                "H_ATTRIBUTE15",
+                "H_SUPPLIER_NAME"
+            ]
+        )[column]
+
         .apply(
             lambda x:
             x.fillna("")
-             .astype(str)
-             .str.strip()
-             .replace("", pd.NA)
-             .dropna()
-             .nunique()
+            .astype(str)
+            .str.strip()
+            .replace("", pd.NA)
+            .dropna()
+            .nunique()
         )
+
         .loc[lambda x: x > 1]
         .index
     )
 
     inconsistency_mask = (
-        df["H_ATTRIBUTE15"]
-        .isin(inconsistent_suppliers)
+
+        df.set_index(
+            [
+                "H_ATTRIBUTE15",
+                "H_SUPPLIER_NAME"
+            ]
+        ).index.isin(
+            inconsistent_groups
+        )
+
     )
 
     df.loc[
         inconsistency_mask,
         "FAILURE_REASON"
     ] += (
-        f"{column} is inconsistent for the same supplier | "
+        f"{column} is inconsistent for the same "
+        "H_ATTRIBUTE15 and H_SUPPLIER_NAME combination | "
     )
 
     df.loc[
@@ -1578,6 +1596,56 @@ for column in consistency_columns:
     ] += (
         f"{column}|"
     )
+
+# ==========================================================
+# RULE 26A
+# SUPPLIER NAME TO SUPPLIER NUMBER UNIQUENESS
+# ==========================================================
+
+duplicate_supplier_number_groups = (
+
+    df.groupby(
+        "H_SUPPLIER_NAME"
+    )["H_SUPPLIER_NUMBER"]
+
+    .apply(
+        lambda x:
+        x.fillna("")
+        .astype(str)
+        .str.strip()
+        .replace("", pd.NA)
+        .dropna()
+        .nunique()
+    )
+
+    .loc[lambda x: x > 1]
+    .index
+)
+
+duplicate_supplier_mask = (
+
+    df["H_SUPPLIER_NAME"]
+    .isin(
+        duplicate_supplier_number_groups
+    )
+
+)
+
+df.loc[
+    duplicate_supplier_mask,
+    "FAILURE_REASON"
+] += (
+    "Same H_SUPPLIER_NAME cannot have multiple "
+    "H_SUPPLIER_NUMBER values | "
+)
+
+df.loc[
+    duplicate_supplier_mask,
+    "ERROR_COLUMNS"
+] += (
+    "H_SUPPLIER_NAME|"
+    "H_SUPPLIER_NUMBER|"
+)
 
 # ==========================================================
 # RULE 27

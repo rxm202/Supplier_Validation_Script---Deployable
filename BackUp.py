@@ -232,62 +232,26 @@ df.loc[
 
 # ==========================================================
 # RULE 4
-# CONTACT FIRST NAME UPPERCASE
+# CONTACT FIRST NAME UPPERCASE TRANSFORMATION
 # ==========================================================
 
-first_name_mask = (
-    df["CONTACT_FIRST_NAME"]
-    .fillna("")
-    .astype(str)
-    !=
+df["CONTACT_FIRST_NAME"] = (
     df["CONTACT_FIRST_NAME"]
     .fillna("")
     .astype(str)
     .str.upper()
-)
-
-df.loc[
-    first_name_mask,
-    "FAILURE_REASON"
-] += (
-    "CONTACT_FIRST_NAME must be entered in uppercase | "
-)
-
-df.loc[
-    first_name_mask,
-    "ERROR_COLUMNS"
-] += (
-    "CONTACT_FIRST_NAME|"
 )
 
 # ==========================================================
 # RULE 5
-# CONTACT LAST NAME UPPERCASE
+# CONTACT LAST NAME UPPERCASE TRANSFORMATION
 # ==========================================================
 
-last_name_mask = (
-    df["CONTACT_LAST_NAME"]
-    .fillna("")
-    .astype(str)
-    !=
+df["CONTACT_LAST_NAME"] = (
     df["CONTACT_LAST_NAME"]
     .fillna("")
     .astype(str)
     .str.upper()
-)
-
-df.loc[
-    last_name_mask,
-    "FAILURE_REASON"
-] += (
-    "CONTACT_LAST_NAME must be entered in uppercase | "
-)
-
-df.loc[
-    last_name_mask,
-    "ERROR_COLUMNS"
-] += (
-    "CONTACT_LAST_NAME|"
 )
 
 # ==========================================================
@@ -487,7 +451,23 @@ ga12 = (
     .str.strip()
 )
 
+ga13 = (
+    df["S_SITE_GLOBAL_ATTRIBUTE13"]
+    .fillna("")
+    .astype(str)
+    .str.strip()
+)
+
+ga15 = (
+    df["S_SITE_GLOBAL_ATTRIBUTE15"]
+    .fillna("")
+    .astype(str)
+    .str.strip()
+)
+
 dependency_mask = (
+    br_country_mask
+    &
     (ga9 != "")
     &
     (
@@ -496,6 +476,10 @@ dependency_mask = (
         (ga11 == "")
         |
         (ga12 == "")
+        |
+        (ga13 == "")
+        |
+        (ga15 == "")
     )
 )
 
@@ -504,8 +488,10 @@ df.loc[
     "FAILURE_REASON"
 ] += (
     "S_SITE_GLOBAL_ATTRIBUTE10, "
-    "S_SITE_GLOBAL_ATTRIBUTE11, and "
-    "S_SITE_GLOBAL_ATTRIBUTE12 are required "
+    "S_SITE_GLOBAL_ATTRIBUTE11, "
+    "S_SITE_GLOBAL_ATTRIBUTE12, "
+    "S_SITE_GLOBAL_ATTRIBUTE13, and "
+    "S_SITE_GLOBAL_ATTRIBUTE15 are required "
     "when S_SITE_GLOBAL_ATTRIBUTE9 is populated "
     "for Suppliers in Brazil | "
 )
@@ -518,6 +504,8 @@ df.loc[
     "S_SITE_GLOBAL_ATTRIBUTE10|"
     "S_SITE_GLOBAL_ATTRIBUTE11|"
     "S_SITE_GLOBAL_ATTRIBUTE12|"
+    "S_SITE_GLOBAL_ATTRIBUTE13|"
+    "S_SITE_GLOBAL_ATTRIBUTE15|"
 )
 
 df.loc[
@@ -534,6 +522,8 @@ df.loc[
     "S_SITE_GLOBAL_ATTRIBUTE10|"
     "S_SITE_GLOBAL_ATTRIBUTE11|"
     "S_SITE_GLOBAL_ATTRIBUTE12|"
+    "S_SITE_GLOBAL_ATTRIBUTE13|"
+    "S_SITE_GLOBAL_ATTRIBUTE15|"
 )
 # ==========================================================
 # RULE 10
@@ -1176,7 +1166,8 @@ df.loc[
 # ==========================================================
 
 doc_type_df = pd.read_excel(
-    "config/BR_DOCUMENT_TYPE.xlsx"
+    "config/BR_DOCUMENT_TYPE.xlsx",
+    dtype={"Value": str}
 )
 
 doc_type_mapping = dict(
@@ -1187,44 +1178,49 @@ doc_type_mapping = dict(
         .str.upper(),
 
         doc_type_df["Value"]
+        .astype(str)
+        .str.strip()
     )
 )
 
-br_mask = (
-    df["S_COUNTRY"]
-    .fillna("")
-    .astype(str)
-    .str.strip()
-    .str.upper()
-    == "BR"
-)
+for idx in df.index:
 
-for idx in df[br_mask].index:
+    country = (
+        ""
+        if pd.isna(df.at[idx, "S_COUNTRY"])
+        else str(df.at[idx, "S_COUNTRY"]).strip().upper()
+    )
 
+    raw_val = df.at[idx, "S_SITE_GLOBAL_ATTRIBUTE9"]
     value = (
-        str(
+        ""
+        if pd.isna(raw_val)
+        else str(raw_val).strip().upper()
+    )
+
+    if country in ["BR", "BRAZIL"]:
+
+        if value in doc_type_mapping:
+
             df.at[
                 idx,
                 "S_SITE_GLOBAL_ATTRIBUTE9"
-            ]
-        )
-        .strip()
-        .upper()
-    )
+            ] = str(doc_type_mapping[value])
 
-    if value in doc_type_mapping:
+        else:
 
-        df.at[
-            idx,
-            "S_SITE_GLOBAL_ATTRIBUTE9"
-        ] = doc_type_mapping[value]
+            df.at[
+                idx,
+                "S_SITE_GLOBAL_ATTRIBUTE9"
+            ] = "3"
 
-    else:
+    elif value == "OTHERS":
 
         df.at[
             idx,
             "S_SITE_GLOBAL_ATTRIBUTE9"
         ] = "3"
+
 
 # ==========================================================
 # RULE 22
@@ -1544,7 +1540,7 @@ consistency_columns = [
     "H_SUPPLIER_NAME_ALT",
     "H_TAX_PAYER_ID",
     "H_TAX_REGISTRATION_NUMBER",
-    "H_SUPPLIER_TYPE"
+    H_SUPPLIER_NAME
 ]
 
 for column in consistency_columns:
