@@ -1533,58 +1533,32 @@ df.loc[
 
 # ==========================================================
 # RULE 26
-# HEADER ATTRIBUTE CONSISTENCY VALIDATION
+# DUPLICATE HEADER RECORD VALIDATION
 # ==========================================================
 
-consistency_columns = [
+duplicate_mask = df.duplicated(
+    subset=[
+        "H_SUPPLIER_NAME",
+        "H_ATTRIBUTE15"
+    ],
+    keep=False
+)
 
-    "H_ATTRIBUTE15",
-    "H_SUPPLIER_NAME_ALT",
-    "H_TAX_PAYER_ID",
-    "H_TAX_REGISTRATION_NUMBER"
+df.loc[
+    duplicate_mask,
+    "FAILURE_REASON"
+] += (
+    "Duplicate H_SUPPLIER_NAME and "
+    "H_ATTRIBUTE15 combination found | "
+)
 
-]
-
-for column in consistency_columns:
-
-    inconsistent_suppliers = (
-
-        df.groupby("H_SUPPLIER_NAME")[column]
-
-        .apply(
-            lambda x:
-            x.fillna("")
-            .astype(str)
-            .str.strip()
-            .replace("", pd.NA)
-            .dropna()
-            .nunique()
-        )
-
-        .loc[lambda x: x > 1]
-        .index
-    )
-
-    inconsistency_mask = (
-
-        df["H_SUPPLIER_NAME"]
-        .isin(inconsistent_suppliers)
-
-    )
-
-    df.loc[
-        inconsistency_mask,
-        "FAILURE_REASON"
-    ] += (
-        f"{column} is inconsistent for the same H_SUPPLIER_NAME | "
-    )
-
-    df.loc[
-        inconsistency_mask,
-        "ERROR_COLUMNS"
-    ] += (
-        f"{column}|"
-    )
+df.loc[
+    duplicate_mask,
+    "ERROR_COLUMNS"
+] += (
+    "H_SUPPLIER_NAME|"
+    "H_ATTRIBUTE15|"
+)
 # ==========================================================
 # RULE 27
 # DUPLICATE TAX PAYER ID ACROSS SUPPLIERS
