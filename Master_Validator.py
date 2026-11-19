@@ -1533,27 +1533,97 @@ df.loc[
 
 # ==========================================================
 # RULE 26
-# DUPLICATE HEADER RECORD VALIDATION
+# HEADER ATTRIBUTE CONSISTENCY VALIDATION
 # ==========================================================
 
-duplicate_mask = df.duplicated(
-    subset=[
-        "H_SUPPLIER_NAME",
-        "H_ATTRIBUTE15"
-    ],
-    keep=False
+consistency_columns = [
+
+    "H_SUPPLIER_NAME",
+
+    "H_SUPPLIER_NAME_ALT",
+
+    "H_TAX_PAYER_ID",
+
+    "H_TAX_REGISTRATION_NUMBER"
+
+]
+
+for column in consistency_columns:
+
+    inconsistent_suppliers = (
+
+        df.groupby("H_ATTRIBUTE15")[column]
+
+        .apply(
+            lambda x:
+            x.fillna("")
+            .astype(str)
+            .str.strip()
+            .replace("", pd.NA)
+            .dropna()
+            .nunique()
+        )
+
+        .loc[lambda x: x > 1]
+        .index
+    )
+
+    inconsistency_mask = (
+
+        df["H_ATTRIBUTE15"]
+
+        .fillna("")
+        .astype(str)
+        .str.strip()
+
+        .isin(inconsistent_suppliers)
+
+    )
+
+    df.loc[
+        inconsistency_mask,
+        "FAILURE_REASON"
+    ] += (
+        f"{column} is inconsistent for the same H_ATTRIBUTE15 | "
+    )
+
+    df.loc[
+        inconsistency_mask,
+        "ERROR_COLUMNS"
+    ] += (
+        f"{column}|"
+    )
+
+# ==========================================================
+# RULE 26A
+# SUPPLIER NAME TO H_ATTRIBUTE15 UNIQUENESS
+# ==========================================================
+
+duplicate_supplier_mask = (
+
+    df.groupby("H_SUPPLIER_NAME")["H_ATTRIBUTE15"]
+
+    .transform(
+        lambda x:
+        x.fillna("")
+        .astype(str)
+        .str.strip()
+        .replace("", pd.NA)
+        .dropna()
+        .nunique()
+    ) > 1
 )
 
 df.loc[
-    duplicate_mask,
+    duplicate_supplier_mask,
     "FAILURE_REASON"
 ] += (
-    "Duplicate H_SUPPLIER_NAME and "
-    "H_ATTRIBUTE15 combination found | "
+    "Same H_SUPPLIER_NAME cannot have multiple "
+    "H_ATTRIBUTE15 values | "
 )
 
 df.loc[
-    duplicate_mask,
+    duplicate_supplier_mask,
     "ERROR_COLUMNS"
 ] += (
     "H_SUPPLIER_NAME|"
