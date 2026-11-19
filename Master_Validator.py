@@ -1538,21 +1538,18 @@ df.loc[
 
 consistency_columns = [
 
+    "H_ATTRIBUTE15",
     "H_SUPPLIER_NAME_ALT",
     "H_TAX_PAYER_ID",
     "H_TAX_REGISTRATION_NUMBER"
+
 ]
 
 for column in consistency_columns:
 
-    inconsistent_groups = (
+    inconsistent_suppliers = (
 
-        df.groupby(
-            [
-                "H_ATTRIBUTE15",
-                "H_SUPPLIER_NAME"
-            ]
-        )[column]
+        df.groupby("H_SUPPLIER_NAME")[column]
 
         .apply(
             lambda x:
@@ -1570,14 +1567,8 @@ for column in consistency_columns:
 
     inconsistency_mask = (
 
-        df.set_index(
-            [
-                "H_ATTRIBUTE15",
-                "H_SUPPLIER_NAME"
-            ]
-        ).index.isin(
-            inconsistent_groups
-        )
+        df["H_SUPPLIER_NAME"]
+        .isin(inconsistent_suppliers)
 
     )
 
@@ -1585,8 +1576,7 @@ for column in consistency_columns:
         inconsistency_mask,
         "FAILURE_REASON"
     ] += (
-        f"{column} is inconsistent for the same "
-        "H_ATTRIBUTE15 and H_SUPPLIER_NAME combination | "
+        f"{column} is inconsistent for the same H_SUPPLIER_NAME | "
     )
 
     df.loc[
@@ -1595,7 +1585,6 @@ for column in consistency_columns:
     ] += (
         f"{column}|"
     )
-
 # ==========================================================
 # RULE 27
 # DUPLICATE TAX PAYER ID ACROSS SUPPLIERS
